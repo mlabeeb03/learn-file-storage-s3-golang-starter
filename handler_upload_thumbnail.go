@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"strings"
@@ -49,6 +50,13 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, http.StatusBadRequest, "Missing Content-Type for thumbnail", nil)
 		return
 	}
+
+	mediaType, _, _ = mime.ParseMediaType(mediaType)
+	if mediaType != "image/jpeg" && mediaType != "image.png" {
+		respondWithError(w, http.StatusBadRequest, "Unsupported image type", err)
+		return
+	}
+
 	video, err := cfg.db.GetVideo(videoID)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Unable to fetch video", err)
